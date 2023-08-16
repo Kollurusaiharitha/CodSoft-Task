@@ -1,0 +1,105 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+
+
+# Load the dataset
+data = pd.read_csv("C:\\HARITHA\\task-3\\Churn_Modelling.csv")
+
+# Data cleaning: Handling missing values
+data.fillna(method="ffill", inplace=True) 
+
+# Feature engineering: Creating new features
+data["total_products_balance"] = data["NumOfProducts"] * data["Balance"]
+data["credit_to_salary_ratio"] = data["CreditScore"] / data["EstimatedSalary"]
+
+
+# Separate categorical and numerical features
+categorical_features = ["Geography", "Gender"]
+numerical_features = ["CreditScore", "Age", "Tenure", "Balance", "NumOfProducts", "HasCrCard", "IsActiveMember", "EstimatedSalary"]
+
+# Preprocessing pipeline
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", StandardScaler(), numerical_features),
+        ("cat", OneHotEncoder(), categorical_features)
+    ])
+
+# Apply preprocessing pipeline
+X = data.drop("Exited", axis=1) 
+y = data["Exited"]
+
+
+X_preprocessed = preprocessor.fit_transform(X)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_preprocessed, y, test_size=0.2, random_state=42)
+
+# Standardize the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Logistic Regression model
+logreg_model = LogisticRegression()
+logreg_model.fit(X_train_scaled, y_train)
+logreg_preds = logreg_model.predict(X_test_scaled)
+
+
+# Random Forest model
+rf_model = RandomForestClassifier()
+rf_model.fit(X_train_scaled, y_train)
+rf_preds = rf_model.predict(X_test_scaled)
+
+# Gradient Boosting model (XGBoost)
+xgb_model = XGBClassifier()
+xgb_model.fit(X_train_scaled, y_train)
+xgb_preds = xgb_model.predict(X_test_scaled)
+
+
+# Evaluate the models
+def evaluate_model(y_true, y_pred, model_name):
+    accuracy = accuracy_score(y_true, y_pred)
+    report = classification_report(y_true, y_pred)
+    print(f"=== {model_name} ===")
+    print(f"Accuracy: {accuracy:.4f}")
+    print("Classification Report:\n", report)
+
+
+evaluate_model(y_test, logreg_preds, "Logistic Regression")
+evaluate_model(y_test, rf_preds, "Random Forest")
+evaluate_model(y_test, xgb_preds, "XGBoost")
+
+Importing Libraries: You begin by importing necessary libraries from scikit-learn and Pandas for data manipulation, preprocessing, modeling, and evaluation.
+
+Loading the Dataset: The dataset, presumably for churn modeling, is loaded from a CSV file.
+
+Data Cleaning: Missing values are handled using a forward fill method to replace them with the previous value in the column.
+
+Feature Engineering: New features are created, including "total_products_balance" calculated as the product of "NumOfProducts" and "Balance," and "credit_to_salary_ratio" calculated as the ratio of "CreditScore" to "EstimatedSalary."
+
+Preprocessing Pipeline: A preprocessing pipeline is set up using ColumnTransformer to apply different preprocessing steps to numerical and categorical features.
+
+Applying Preprocessing: The preprocessing pipeline is applied to the feature matrix X, and the target variable y is prepared.
+
+Splitting Data: The data is split into training and testing sets using the train_test_split function.
+
+Standardizing Features: Standard scaling is applied to the features using StandardScaler.
+
+Modeling: Logistic Regression, Random Forest, and XGBoost models are created and trained on the scaled training data.
+
+Making Predictions: Predictions are made on the scaled testing data using each of the trained models.
+
+Evaluating Models: A function evaluate_model is defined to calculate accuracy and generate a classification report for each model's predictions.
+
+Evaluation Results: The evaluate_model function is called for each model, and accuracy along with classification reports are printed for each model.
+
+In summary, this code performs churn prediction using three different models (Logistic Regression, Random Forest, and XGBoost). It involves data loading, cleaning, feature engineering, preprocessing, model training, prediction, and evaluation. The evaluate_model function helps assess the models' performance by providing accuracy and a detailed classification report.
