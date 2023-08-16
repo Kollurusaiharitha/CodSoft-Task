@@ -1,0 +1,175 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+
+
+# Load the dataset
+train_csv_file_path = "C:\\HARITHA\\archive\\fraudTest.csv"
+test_csv_file_path = "C:\\HARITHA\\archive\\fraudTrain.csv"
+
+
+
+train_df = pd.read_csv(train_csv_file_path)
+test_df = pd.read_csv(test_csv_file_path)
+
+
+
+print(train_df.columns)
+
+print(test_df.columns)
+
+# Compare columns and identify any discrepancies
+train_columns = set(train_df.columns)
+test_columns = set(test_df.columns)
+missing_columns_in_train = test_columns - train_columns
+missing_columns_in_test = train_columns - test_columns
+
+print("\nColumns missing in train_df:", missing_columns_in_train)
+print("Columns missing in test_df:", missing_columns_in_test)
+
+
+print(test_df.columns)
+
+
+missing_columns_in_train = test_df.columns.difference(train_df.columns)
+missing_columns_in_test = train_df.columns.difference(test_df.columns)
+
+
+# Add missing columns with zeros to the respective dataframes
+for column in missing_columns_in_train:
+    train_df[column] = 0
+
+for column in missing_columns_in_test:
+    test_df[column] = 0
+
+# Reorder columns to ensure consistency
+train_df = train_df[test_df.columns]
+
+# Apply preprocessing steps for categorical columns
+categorical_columns = ['trans_date_trans_time', 'cc_num', 'amt', 'first', 'last',
+                         'zip', 'lat', 'long', 'city_pop', ]
+
+# Apply Label Encoding to categorical columns
+for column in categorical_columns:
+    le = LabelEncoder()
+    le.fit(pd.concat([train_df[column], test_df[column]]))
+    train_df[column] = le.transform(train_df[column])
+    test_df[column] = le.transform(test_df[column])
+
+# Numeric columns (no preprocessing required)
+numeric_columns = ['amt', 'lat', 'long', 'city_pop', 'unix_time', 'is_fraud']
+
+
+# Splitting the data into train and test sets
+X_train = train_df[numeric_columns]
+y_train = train_df['is_fraud']
+X_test = test_df[numeric_columns]
+y_test = test_df['is_fraud']
+
+!pip install xgboost
+
+
+from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+
+
+# Initialize classifiers
+classifiers = {
+    'Naive Bayes': GaussianNB(),
+    'Logistic Regression': LogisticRegression(),
+    'Random Forest': RandomForestClassifier(),
+    'XGBoost': XGBClassifier()
+}
+
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+
+# Training and evaluating classifiers
+for name, classifier in classifiers.items():
+    print(f"Training {name} classifier...")
+    classifier.fit(X_train, y_train)
+    
+    # Make predictions on the test data
+    predictions = classifier.predict(X_test)
+    
+    # Evaluate the classifier
+    accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions)
+    recall = recall_score(y_test, predictions)
+    f1 = f1_score(y_test, predictions)
+
+print(f"{name} Classifier:")
+print(f"Accuracy: {accuracy:.4f}")
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1:.4f}")
+print("="*40)
+
+Fraud Detection Classifier
+Welcome to the Fraud Detection Classifier repository! This project demonstrates the process of loading a fraud detection dataset, preprocessing the data, training multiple machine learning classifiers, and evaluating their performance using various metrics.
+
+Purpose
+The main purpose of this project is to showcase a comprehensive pipeline for fraud detection using machine learning. The code provided here covers the following steps:
+
+Loading the dataset from CSV files and comparing columns between the training and testing data.
+Handling missing columns by adding them with default values to maintain consistency.
+Preprocessing categorical columns using Label Encoding to convert them into numerical values.
+Splitting the data into training and testing sets.
+Training and evaluating multiple classifiers, including Naive Bayes, Logistic Regression, Random Forest, and XGBoost.
+Calculating accuracy, precision, recall, and F1 score to assess the performance of each classifier.
+Usage
+To use this code for your own fraud detection task, follow these steps:
+
+Clone or download this repository to your local machine.
+
+Ensure you have the required libraries installed. You can use the following command to install the required libraries:
+
+Copy code
+pip install pandas scikit-learn xgboost
+Replace the file paths in the code (train_csv_file_path and test_csv_file_path) with the paths to your own training and testing CSV files.
+
+Run the script. It will load the data, preprocess it, train the classifiers, and display their performance metrics.
+
+File Structure
+fraud_detection_script.py: The main Python script containing the entire pipeline for fraud detection.
+README.md: You're reading it! This file provides an overview of the project and instructions on usage.
+Code
+Here's the continuation of the code from the previous section:
+
+python
+Copy code
+# Continued code from the previous section...
+
+# Training and evaluating classifiers
+for name, classifier in classifiers.items():
+    print(f"Training {name} classifier...")
+    classifier.fit(X_train, y_train)
+    
+    # Make predictions on the test data
+    predictions = classifier.predict(X_test)
+    
+    # Evaluate the classifier
+    accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions)
+    recall = recall_score(y_test, predictions)
+    f1 = f1_score(y_test, predictions)
+
+    print(f"{name} Classifier:")
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1 Score: {f1:.4f}")
+    print("="*40)
+
+# End of the code
+Note
+This code is intended for educational and demonstration purposes. It might require further refinement for production-level use.
+If you encounter issues or have questions, feel free to reach out to the repository owner.
+License
+This project is licensed under the MIT License - feel free to use, modify, and distribute the code as needed.
+
