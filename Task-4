@@ -1,0 +1,83 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
+
+data = pd.read_csv("C:\\HARITHA\\codsoft task_4\\spam.csv", encoding='ISO-8859-1')
+
+
+print(data.columns)
+
+
+# Keep only the relevant columns 'v1' and 'v2'
+data = data[['v1', 'v2']]
+
+# Rename the columns for clarity
+data.columns = ["label", "text"]
+
+
+# Mapping "spam" to 1 and "ham" to 0
+data["label"] = data["label"].map({"spam": 1, "ham": 0})
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(data["text"], data["label"], test_size=0.2, random_state=42)
+
+
+# Create a TF-IDF vectorizer
+tfidf_vectorizer = TfidfVectorizer(max_features=5000)  
+
+
+# Fit and transform the training data
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+
+
+# Transform the testing data
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+
+
+# Create a Naive Bayes classifier
+naive_bayes = MultinomialNB()
+
+
+# Train the model
+naive_bayes.fit(X_train_tfidf, y_train)
+
+
+# Make predictions
+y_pred = naive_bayes.predict(X_test_tfidf)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("Classification Report:\n", report)
+
+
+Certainly, it seems you've provided a code snippet that involves text classification using a Naive Bayes classifier. Here's a brief description of what the code does:
+
+Text Classification using Naive Bayes
+This code snippet demonstrates text classification using a Naive Bayes classifier. The goal is to classify messages as either "spam" or "ham" (not spam) based on their content. The steps in this process are as follows:
+
+Data Loading and Preparation:
+The code loads a dataset containing SMS messages and their labels ("spam" or "ham"). Irrelevant columns are removed, and the relevant columns are renamed for clarity. The "spam" label is mapped to 1 and the "ham" label is mapped to 0.
+
+Data Splitting:
+The dataset is split into training and testing sets using scikit-learn's train_test_split function. This allows the model's performance to be evaluated on unseen data.
+
+TF-IDF Vectorization:
+A TF-IDF vectorizer is used to convert the text messages into numerical features. This process assigns weights to words based on their importance in the document and across the entire dataset. The max_features parameter is set to 5000, limiting the number of features to the top 5000 most frequent words.
+
+Model Training:
+A Naive Bayes classifier (MultinomialNB) is initialized.
+
+Model Fitting:
+The model is trained on the TF-IDF transformed training data using the fit method.
+
+Prediction:
+Predictions are made on the TF-IDF transformed testing data using the trained model.
+
+Model Evaluation:
+The accuracy of the model is calculated using scikit-learn's accuracy_score function. Additionally, a classification report is generated using classification_report, which provides metrics such as precision, recall, and F1-score for both "spam" and "ham" classes.
+
+Overall, this code showcases a simple yet effective approach to text classification using a Naive Bayes classifier and TF-IDF vectorization.
